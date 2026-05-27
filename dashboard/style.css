@@ -1,0 +1,29 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+}
+.kpi {
+  transition: transform .15s ease;
+}
+.kpi:hover {
+  transform: translateY(-2px);
+}
+.up   { color: #dc2626; }  /* 한국식: 상승 빨강 */
+.down { color: #2563eb; }  /* 한국식: 하락 파랑 */
+.flat { color: #6b7280; }
+canvas {
+  max-height: 280px;
+}
+
+.lag-btn {
+  background: #fff;
+  color: #475569;
+  transition: background .12s ease;
+}
+.lag-btn.active {
+  background: #0ea5e9;
+  color: #fff;
+  font-weight: 600;
+}
+.lag-btn:hover:not(.active) {
+  background: #f1f5f9;
+}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KOSPI 시장 자금 분석</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-slate-50 text-slate-800">
+<div class="max-w-7xl mx-auto p-6">
+
+  <header class="mb-6">
+    <h1 class="text-2xl font-bold">KOSPI 시장 자금 분석</h1>
+    <p id="period" class="text-sm text-slate-500 mt-1"></p>
+  </header>
+
+  <section id="kpis" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6"></section>
+
+  <section class="bg-white rounded-2xl shadow-sm p-5 mb-6">
+    <h2 class="text-base font-semibold mb-3">KOSPI 지수</h2>
+    <canvas id="ch_kospi"></canvas>
+  </section>
+
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">고객(투자자) 예탁금</h2>
+      <canvas id="ch_deposit"></canvas>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">유가증권시장 거래대금</h2>
+      <canvas id="ch_value"></canvas>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">신용거래 융자 잔고</h2>
+      <canvas id="ch_credit"></canvas>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">대차거래 잔고 (금액)</h2>
+      <canvas id="ch_lending"></canvas>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">신용잔고 / 시가총액 (%)</h2>
+      <canvas id="ch_credit_ratio"></canvas>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">외국인 비중 (%)</h2>
+      <canvas id="ch_foreign"></canvas>
+    </div>
+  </section>
+
+  <!-- 예탁금 vs 거래대금 비교 -->
+  <section class="bg-white rounded-2xl shadow-sm p-5 mb-10">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+      <h2 class="text-lg font-semibold">예탁금 vs 거래대금 비교</h2>
+      <div class="inline-flex rounded-lg overflow-hidden border" id="lag_toggle">
+        <button data-lag="0" class="lag-btn px-3 py-1 text-sm">D+0</button>
+        <button data-lag="1" class="lag-btn px-3 py-1 text-sm border-l">D+1</button>
+        <button data-lag="2" class="lag-btn px-3 py-1 text-sm border-l">D+2</button>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 mb-4">
+      예탁금은 전영업일 마감 기준, 거래대금은 당일 기준, 결제는 <b>T+2</b>입니다.
+      D+N 선택 시 거래대금 라인을 N일 뒤로 shift해 결제 시점에서 비교합니다.
+    </p>
+
+    <div class="mb-5">
+      <div class="text-sm font-medium mb-2" id="dual_title">이중축 시계열 (예탁금 vs 거래대금)</div>
+      <canvas id="ch_dual"></canvas>
+    </div>
+
+    <div>
+      <div class="text-sm font-medium mb-2" id="ratio_title">거래대금 / 예탁금 (%) — 자금 회전율</div>
+      <canvas id="ch_ratio"></canvas>
+      <p class="text-xs text-slate-400 mt-2">
+        예탁금 대비 그날 매매된 비율. 값이 높을수록 자금이 활발하게 회전합니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- KOSPI ↔ 예탁금 상관관계 -->
+  <section class="bg-white rounded-2xl shadow-sm p-5 mb-10">
+    <h2 class="text-lg font-semibold mb-1">KOSPI 지수 ↔ 예탁금 상관관계</h2>
+    <p class="text-xs text-slate-500 mb-4">
+      국면별 Pearson 상관계수 비교. <b>r</b>은 두 시계열 원본 기준, <b>Δr</b>은 일별 변화량 기준입니다.
+      두 지표가 같이 우상향이라 단순 r은 추세 때문에 자동으로 높게 나옵니다 — 본질은 Δr.
+    </p>
+
+    <!-- 구간 표 -->
+    <div class="overflow-x-auto mb-5">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="bg-slate-100">
+            <th class="border px-3 py-2 text-left">구간</th>
+            <th class="border px-3 py-2 text-left">기간</th>
+            <th class="border px-3 py-2 text-right">r</th>
+            <th class="border px-3 py-2 text-right">Δr</th>
+            <th class="border px-3 py-2 text-right">표본수</th>
+            <th class="border px-3 py-2 text-left">의미</th>
+          </tr>
+        </thead>
+        <tbody id="phase_tbody"></tbody>
+      </table>
+      <p class="text-xs text-slate-400 mt-2">
+        |r| ≥ 0.7 강한 동조 · 0.4 ~ 0.7 중간 · &lt; 0.4 약함 (음수는 역상관)
+      </p>
+    </div>
+
+    <!-- 롤링 r 차트 -->
+    <div>
+      <div class="text-sm font-medium mb-2">30일 롤링 Pearson r (KOSPI vs 예탁금)</div>
+      <canvas id="ch_rolling"></canvas>
+      <p class="text-xs text-slate-400 mt-2">
+        30 거래일 윈도우로 매 시점의 동조성 변화. 0 위는 양의 동조, 0 아래는 역상관.
+      </p>
+    </div>
+  </section>
+
+  <footer class="text-xs text-slate-400 text-center pt-4 border-t">
+    출처: 금융투자협회 FreeSIS · 자동 수집 ·
+    <span id="updated"></span>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+data/probe/
+dashboard-flat.zip
+_preview*.png
+_p_*.png
+_kc*.png
+_deploy_*.png
+src/_*.py
+.DS_Store
+Thumbs.db
