@@ -91,20 +91,26 @@ async function init() {
   document.getElementById("updated").textContent =
     `최종 데이터: ${j.range.end}`;
 
-  const last = rows[rows.length - 1];
-  const prev = rows[rows.length - 2];
+  // FreeSIS는 지표마다 발행 시점이 달라 가장 최근 행에 일부 필드가 null일 수 있음.
+  // KPI 카드는 각 지표의 마지막 두 non-null 값을 사용해 항상 의미있는 수치를 표시.
+  const lastTwo = (key) => {
+    const out = [];
+    for (let i = rows.length - 1; i >= 0 && out.length < 2; i--) {
+      if (rows[i][key] != null) out.push(rows[i][key]);
+    }
+    return { last: out[0] ?? null, prev: out[1] ?? null };
+  };
+  const kpi = (key, fmt, label) => {
+    const { last, prev } = lastTwo(key);
+    return { label, val: fmt(last), delta: pctDelta(last, prev) };
+  };
 
   const cards = [
-    { label: "KOSPI 지수", val: fmtIndex(last["KOSPI지수"]),
-      delta: pctDelta(last["KOSPI지수"], prev["KOSPI지수"]) },
-    { label: "고객예탁금", val: fmtBigKRW(last["투자자예탁금"]),
-      delta: pctDelta(last["투자자예탁금"], prev["투자자예탁금"]) },
-    { label: "거래대금",   val: fmtBigKRW(last["거래대금"]),
-      delta: pctDelta(last["거래대금"], prev["거래대금"]) },
-    { label: "신용잔고",   val: fmtBigKRW(last["신용잔고"]),
-      delta: pctDelta(last["신용잔고"], prev["신용잔고"]) },
-    { label: "대차잔고",   val: fmtBigKRW(last["대차잔고"]),
-      delta: pctDelta(last["대차잔고"], prev["대차잔고"]) },
+    kpi("KOSPI지수",   fmtIndex,  "KOSPI 지수"),
+    kpi("투자자예탁금", fmtBigKRW, "고객예탁금"),
+    kpi("거래대금",    fmtBigKRW, "거래대금"),
+    kpi("신용잔고",    fmtBigKRW, "신용잔고"),
+    kpi("대차잔고",    fmtBigKRW, "대차잔고"),
   ];
 
   const kpiHtml = cards.map((c) => {
