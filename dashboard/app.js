@@ -43,6 +43,17 @@ const arrow = (d) => {
   return { sym: "0%", cls: "flat" };
 };
 
+// X축 라벨 콜백: 첫날·마지막날 + 일정 간격 + 마지막날에 너무 가까운 step 라벨은
+// 숨김 (특히 좁은 카드형 차트에서 라벨이 겹쳐 보이는 문제 방지).
+function xTickCallback(_val, idx) {
+  const total = this.chart.data.labels.length;
+  const step = Math.max(1, Math.floor(total / 6));
+  if (idx === 0 || idx === total - 1) return this.chart.data.labels[idx];
+  if (idx % step !== 0) return "";
+  if (total - 1 - idx < step / 2) return "";
+  return this.chart.data.labels[idx];
+}
+
 function makeChart(canvasId, labels, data, color, yFmt) {
   const ctx = document.getElementById(canvasId);
   return new Chart(ctx, {
@@ -75,15 +86,7 @@ function makeChart(canvasId, labels, data, color, yFmt) {
         x: {
           ticks: {
             autoSkip: false,
-            callback: function (val, idx) {
-              const total = this.chart.data.labels.length;
-              const step = Math.max(1, Math.floor(total / 6));
-              // 첫날, 마지막날 반드시 표시 + 중간 간격
-              if (idx === 0 || idx === total - 1 || idx % step === 0) {
-                return this.chart.data.labels[idx];
-              }
-              return "";
-            },
+            callback: xTickCallback,
             maxRotation: 0,
             minRotation: 0,
           },
@@ -276,12 +279,7 @@ function buildCorrelation(rows) {
         x: {
           ticks: {
             autoSkip: false,
-            callback: function (val, idx) {
-              const total = this.chart.data.labels.length;
-              const step = Math.max(1, Math.floor(total / 6));
-              if (idx === 0 || idx === total - 1 || idx % step === 0) return this.chart.data.labels[idx];
-              return "";
-            },
+            callback: xTickCallback,
             maxRotation: 0, minRotation: 0,
           },
           grid: { display: false },
@@ -316,12 +314,7 @@ function buildCorrelation(rows) {
         x: {
           ticks: {
             autoSkip: false,
-            callback: function (val, idx) {
-              const total = this.chart.data.labels.length;
-              const step = Math.max(1, Math.floor(total / 6));
-              if (idx === 0 || idx === total - 1 || idx % step === 0) return this.chart.data.labels[idx];
-              return "";
-            },
+            callback: xTickCallback,
             maxRotation: 0, minRotation: 0,
           },
           grid: { display: false },
@@ -459,12 +452,7 @@ function buildKospiCorr(rows) {
         x: {
           ticks: {
             autoSkip: false,
-            callback: function (val, idx) {
-              const total = this.chart.data.labels.length;
-              const step = Math.max(1, Math.floor(total / 6));
-              if (idx === 0 || idx === total - 1 || idx % step === 0) return this.chart.data.labels[idx];
-              return "";
-            },
+            callback: xTickCallback,
             maxRotation: 0, minRotation: 0,
           },
           grid: { display: false },
