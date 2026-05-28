@@ -44,6 +44,24 @@
 
   <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">장내파생상품 예수금</h2>
+      <canvas id="ch_deriv"></canvas>
+      <p class="text-xs text-slate-400 mt-2">선물·옵션 거래 증거금. KOSPI와 가장 강한 동조성 (r=+0.954).</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">RP매도잔고 (≈ CMA)</h2>
+      <canvas id="ch_rp"></canvas>
+      <p class="text-xs text-slate-400 mt-2">증권사 단기 운용 자금. 조정장에서도 +0.44 유지 — 회피처 성격.</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">증권담보융자</h2>
+      <canvas id="ch_collateral"></canvas>
+      <p class="text-xs text-slate-400 mt-2">예탁증권 담보 대출. KOSPI와 r=−0.019 — 별도 신용 사이클로 움직임.</p>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm p-5">
       <h2 class="text-base font-semibold mb-3">신용잔고 / 시가총액 (%)</h2>
       <canvas id="ch_credit_ratio"></canvas>
     </div>
@@ -64,8 +82,8 @@
       </div>
     </div>
     <p class="text-xs text-slate-500 mb-4">
-      예탁금은 전영업일 마감 기준, 거래대금은 당일 기준, 결제는 <b>T+2</b>입니다.
-      D+N 선택 시 거래대금 라인을 N일 뒤로 shift해 결제 시점에서 비교합니다.
+      예탁금은 전영업일 마감 기준, 거래대금은 당일 기준, 결제는 <b>T+2</b>임.
+      D+N 선택 시 거래대금 라인을 N일 뒤로 shift해 결제 시점에서 비교함.
     </p>
 
     <div class="mb-5">
@@ -77,7 +95,7 @@
       <div class="text-sm font-medium mb-2" id="ratio_title">거래대금 / 예탁금 (%) — 자금 회전율</div>
       <canvas id="ch_ratio"></canvas>
       <p class="text-xs text-slate-400 mt-2">
-        예탁금 대비 그날 매매된 비율. 값이 높을수록 자금이 활발하게 회전합니다.
+        예탁금 대비 그날 매매된 비율. 값이 높을수록 자금이 활발하게 회전함.
       </p>
     </div>
   </section>
@@ -86,8 +104,8 @@
   <section class="bg-white rounded-2xl shadow-sm p-5 mb-10">
     <h2 class="text-lg font-semibold mb-1">KOSPI 지수 ↔ 예탁금 상관관계</h2>
     <p class="text-xs text-slate-500 mb-4">
-      국면별 Pearson 상관계수 비교. <b>r</b>은 두 시계열 원본 기준, <b>Δr</b>은 일별 변화량 기준입니다.
-      두 지표가 같이 우상향이라 단순 r은 추세 때문에 자동으로 높게 나옵니다 — 본질은 Δr.
+      국면별 Pearson 상관계수 비교. <b>r</b>은 두 시계열 원본 기준, <b>Δr</b>은 일별 변화량 기준임.
+      두 지표가 같이 우상향이라 단순 r은 추세 때문에 자동으로 높게 나옴 — 본질은 Δr.
     </p>
 
     <!-- 구간 표 -->
@@ -116,6 +134,225 @@
       <canvas id="ch_rolling"></canvas>
       <p class="text-xs text-slate-400 mt-2">
         30 거래일 윈도우로 매 시점의 동조성 변화. 0 위는 양의 동조, 0 아래는 역상관.
+      </p>
+    </div>
+  </section>
+
+  <!-- 5대 자금/신용 지표 × KOSPI 상관관계 분석 -->
+  <section class="bg-white rounded-2xl shadow-sm p-5 mb-10">
+    <h2 class="text-lg font-semibold mb-1">5대 자금/신용 지표 × KOSPI 상관관계</h2>
+    <p class="text-xs text-slate-500 mb-5">
+      freesis "주식 → 증시자금 / 신용공여" 카테고리의 5개 지표를 KOSPI 지수와 비교함.
+      예탁금·파생예수금·RP매도잔고는 <b>대기성 자금</b>, 신용거래융자·증권담보융자는 <b>레버리지 자금</b>임.
+    </p>
+
+    <!-- 핵심 인사이트 박스 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+      <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-sm">
+        <div class="font-semibold mb-2 text-emerald-900">① 가장 강한 KOSPI 동조</div>
+        <ul class="space-y-1 text-slate-700">
+          <li>RP매도잔고 &nbsp;<span class="text-slate-500">r = +0.768</span></li>
+          <li>예탁금 &nbsp;<span class="text-slate-500">r = +0.807</span></li>
+          <li>신용거래융자 &nbsp;<span class="text-slate-500">r = +0.906</span></li>
+          <li class="font-bold text-emerald-900">파생예수금 &nbsp;<span class="text-emerald-700">r = +0.954</span></li>
+        </ul>
+        <div class="text-xs text-slate-500 mt-2 pt-2 border-t border-emerald-100">
+          파생예수금이 KOSPI 추세에 가장 민감함 — 30일 롤링도 양(+) 89.6%로 1위
+        </div>
+      </div>
+
+      <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-sm">
+        <div class="font-semibold mb-2 text-emerald-900">② 증권담보융자는 KOSPI와 무관</div>
+        <ul class="space-y-1 text-slate-700">
+          <li>신용거래융자와 Δr &nbsp;<span class="text-slate-500">+0.477 (동행)</span></li>
+          <li class="font-bold text-emerald-900">KOSPI와 전체 r &nbsp;<span class="text-blue-600">−0.019</span></li>
+        </ul>
+        <div class="text-xs text-slate-500 mt-2 pt-2 border-t border-emerald-100">
+          별도 신용 사이클로 움직임 — 같은 카테고리 내 신용거래융자와만 일별 변화에서 동행함
+        </div>
+      </div>
+
+      <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-sm">
+        <div class="font-semibold mb-2 text-emerald-900">③ 모든 지표가 KOSPI에 후행</div>
+        <ul class="space-y-1 text-slate-700">
+          <li>파생예수금 &nbsp;<span class="text-slate-500">+1일 후 최대 r</span></li>
+          <li>예탁금 &nbsp;<span class="text-slate-500">+2일 후</span></li>
+          <li>신용거래융자 &nbsp;<span class="text-slate-500">+3일 후</span></li>
+          <li class="font-bold text-emerald-900">KOSPI가 먼저 움직이고 자금이 따라옴</li>
+        </ul>
+        <div class="text-xs text-slate-500 mt-2 pt-2 border-t border-emerald-100">
+          "예탁금이 선행지표" 가설은 이 기간 데이터로 성립 안 함
+        </div>
+      </div>
+
+      <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-sm">
+        <div class="font-semibold mb-2 text-emerald-900">④ 조정장 부호 반전 패턴</div>
+        <ul class="space-y-1 text-slate-700">
+          <li>신용거래융자 Δr &nbsp;<span class="text-slate-500">+0.17 (느리게 빠짐)</span></li>
+          <li>RP매도잔고 Δr &nbsp;<span class="text-slate-500">+0.45 (회피처)</span></li>
+          <li>예탁금 Δr &nbsp;<span class="text-blue-600">−0.36 (대기성)</span></li>
+          <li class="font-bold text-emerald-900">파생예수금 Δr &nbsp;<span class="text-blue-600">−0.49 (가장 또렷)</span></li>
+        </ul>
+        <div class="text-xs text-slate-500 mt-2 pt-2 border-t border-emerald-100">
+          대기성 자금은 조정 시 KOSPI와 역행, 단기 자금/신용은 회피처 또는 관성 유지
+        </div>
+      </div>
+    </div>
+
+    <!-- 표 A. 구간별 정적 r -->
+    <div class="overflow-x-auto mb-6">
+      <div class="text-sm font-semibold mb-2">표 A. 정적 r — KOSPI × 각 지표 (전체 + 4구간)</div>
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="bg-slate-100">
+            <th class="border px-3 py-2 text-left">구간</th>
+            <th class="border px-3 py-2 text-left">기준</th>
+            <th class="border px-3 py-2 text-right">예탁금</th>
+            <th class="border px-3 py-2 text-right">파생예수금</th>
+            <th class="border px-3 py-2 text-right">RP매도잔고</th>
+            <th class="border px-3 py-2 text-right">신용거래융자</th>
+            <th class="border px-3 py-2 text-right">증권담보융자</th>
+          </tr>
+        </thead>
+        <tbody id="five_static_tbody"></tbody>
+      </table>
+      <p class="text-xs text-slate-400 mt-2">
+        |r| ≥ 0.7 강한 동조 · 0.4~0.7 중간 · &lt; 0.4 약함 (음수는 역상관). Δr은 일별 변화량 기준.
+      </p>
+    </div>
+
+    <!-- 표 B / 표 C — r·Δr 부호 해석 가이드 (좌우 나란히) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="overflow-x-auto">
+        <div class="text-sm font-semibold mb-2">표 B. r 부호 해석 (시장 방향별)</div>
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="border px-3 py-2 text-left">시장 방향</th>
+              <th class="border px-3 py-2 text-center">r 부호</th>
+              <th class="border px-3 py-2 text-left">의미</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border px-3 py-2">상승</td>
+              <td class="border px-3 py-2 text-center text-slate-600 font-bold">+</td>
+              <td class="border px-3 py-2 text-slate-600">자금 유입 동조 (정상)</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="border px-3 py-2">상승</td>
+              <td class="border px-3 py-2 text-center text-blue-600 font-bold">−</td>
+              <td class="border px-3 py-2"><b>자금 이탈 / 약세 다이버전스</b> — 천장 경고</td>
+            </tr>
+            <tr>
+              <td class="border px-3 py-2">하락</td>
+              <td class="border px-3 py-2 text-center text-slate-600 font-bold">+</td>
+              <td class="border px-3 py-2 text-slate-600">패닉 동반 매도</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="border px-3 py-2">하락</td>
+              <td class="border px-3 py-2 text-center text-blue-600 font-bold">−</td>
+              <td class="border px-3 py-2"><b>대기성 자금화 / 강세 다이버전스</b> — 바닥 신호</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-xs text-slate-400 mt-2">
+          r은 추세 효과가 끼어 우상향끼리는 자동으로 양수 나옴. 음수일 때가 정보량 큼.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <div class="text-sm font-semibold mb-2">표 C. Δr 부호 해석 (추세 효과 제거)</div>
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="border px-3 py-2 text-left">시장 방향</th>
+              <th class="border px-3 py-2 text-center">Δr 부호</th>
+              <th class="border px-3 py-2 text-left">의미</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border px-3 py-2">상승</td>
+              <td class="border px-3 py-2 text-center text-slate-600 font-bold">+</td>
+              <td class="border px-3 py-2"><b>신규 자금 유입이 상승 견인</b></td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="border px-3 py-2">상승</td>
+              <td class="border px-3 py-2 text-center text-blue-600 font-bold">−</td>
+              <td class="border px-3 py-2">매수 결제로 자금 유출 (T+2) / 차익실현</td>
+            </tr>
+            <tr>
+              <td class="border px-3 py-2">하락</td>
+              <td class="border px-3 py-2 text-center text-slate-600 font-bold">+</td>
+              <td class="border px-3 py-2">패닉 동반 이탈</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="border px-3 py-2">하락</td>
+              <td class="border px-3 py-2 text-center text-blue-600 font-bold">−</td>
+              <td class="border px-3 py-2"><b>저가매수 / 물타기 자금</b> — 대기성 자금화</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-xs text-slate-400 mt-2">
+          Δr이 자금 흐름의 본질 — 같은 r에서도 Δr 부호로 1차/2차 상승의 질이 갈림.
+        </p>
+      </div>
+    </div>
+
+    <!-- 표 D — 우리 데이터에서 실제 나타난 케이스 -->
+    <div class="overflow-x-auto mb-2">
+      <div class="text-sm font-semibold mb-2">표 D. 우리 데이터에서 실제 나타난 케이스</div>
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="bg-slate-100">
+            <th class="border px-3 py-2 text-left">구간</th>
+            <th class="border px-3 py-2 text-left">지표</th>
+            <th class="border px-3 py-2 text-right">Δr</th>
+            <th class="border px-3 py-2 text-left">어느 케이스</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border px-3 py-2 font-medium">1차 상승</td>
+            <td class="border px-3 py-2">예탁금</td>
+            <td class="border px-3 py-2 text-right text-blue-600 font-bold">−0.237</td>
+            <td class="border px-3 py-2 text-slate-700">상승 + 음수 → 매수 결제로 일별 유출</td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="border px-3 py-2 font-medium">1차 상승</td>
+            <td class="border px-3 py-2">파생예수금</td>
+            <td class="border px-3 py-2 text-right text-blue-600 font-bold">−0.437</td>
+            <td class="border px-3 py-2 text-slate-700">상승 + 음수 → 옵션 매수 결제 인출</td>
+          </tr>
+          <tr>
+            <td class="border px-3 py-2 font-medium">조정</td>
+            <td class="border px-3 py-2">예탁금</td>
+            <td class="border px-3 py-2 text-right text-blue-600 font-bold">−0.364</td>
+            <td class="border px-3 py-2 text-slate-700">하락 + 음수 → 대기성 자금화</td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="border px-3 py-2 font-medium">조정</td>
+            <td class="border px-3 py-2">파생예수금</td>
+            <td class="border px-3 py-2 text-right text-blue-600 font-bold">−0.491</td>
+            <td class="border px-3 py-2 text-slate-700">하락 + 음수 → 가장 또렷한 역행</td>
+          </tr>
+          <tr>
+            <td class="border px-3 py-2 font-medium">조정</td>
+            <td class="border px-3 py-2">RP매도잔고</td>
+            <td class="border px-3 py-2 text-right text-slate-700 font-bold">+0.446</td>
+            <td class="border px-3 py-2 text-slate-700">하락 + 양수 → 단기 회피처 동반 이탈</td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="border px-3 py-2 font-medium">2차 상승</td>
+            <td class="border px-3 py-2">예탁금</td>
+            <td class="border px-3 py-2 text-right text-slate-700 font-bold">+0.193</td>
+            <td class="border px-3 py-2 text-slate-700">상승 + 양수 → 신규 자금 유입이 견인</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-xs text-slate-400 mt-2">
+        값은 표 A에서 그대로. 부호 조합이 어떤 시장 상태를 의미하는지 매핑함.
       </p>
     </div>
   </section>

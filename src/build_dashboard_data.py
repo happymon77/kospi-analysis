@@ -1,4 +1,4 @@
-"""4개 CSV를 단일 JSON(dashboard/assets/data.json)으로 통합."""
+"""4개 CSV를 단일 JSON(dashboard/assets/data.json)으로 통합. 차트용 미니 데이터셋."""
 from __future__ import annotations
 
 import json
@@ -22,9 +22,18 @@ def load(path: Path) -> pd.DataFrame:
 
 
 def main() -> None:
-    jeungsi = load(DATA / "jeungsi_jageum_2026Q1Q2.csv")[["date", "투자자예탁금"]]
-    credit  = load(DATA / "신용공여_잔고_2026Q1Q2.csv")[["date", "신용거래융자_전체"]]
-    credit  = credit.rename(columns={"신용거래융자_전체": "신용잔고"})
+    jeungsi = load(DATA / "jeungsi_jageum_2026Q1Q2.csv")[
+        ["date", "투자자예탁금", "장내파생상품_예수금", "RP_매도잔고"]
+    ]
+    jeungsi = jeungsi.rename(
+        columns={"장내파생상품_예수금": "파생예수금", "RP_매도잔고": "RP매도잔고"}
+    )
+    credit  = load(DATA / "신용공여_잔고_2026Q1Q2.csv")[
+        ["date", "신용거래융자_전체", "예탁증권담보융자"]
+    ]
+    credit  = credit.rename(
+        columns={"신용거래융자_전체": "신용잔고", "예탁증권담보융자": "증권담보융자"}
+    )
     lending = load(DATA / "대차거래_추이_2026Q1Q2.csv")[["date", "잔고_금액"]]
     lending = lending.rename(columns={"잔고_금액": "대차잔고"})
     kospi   = load(DATA / "유가증권시장_2026Q1Q2.csv")[
@@ -32,11 +41,10 @@ def main() -> None:
     ]
 
     df = kospi.merge(jeungsi, on="date", how="left") \
-              .merge(credit,  on="date", how="left") \
+              .merge(credit, on="date", how="left") \
               .merge(lending, on="date", how="left")
     df = df.sort_values("date").reset_index(drop=True)
 
-    # 신용잔고/시총 비율 (%)
     df["신용_시총비율_pct"] = (df["신용잔고"] / df["시가총액"] * 100).round(3)
 
     out = {

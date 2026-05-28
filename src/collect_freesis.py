@@ -37,6 +37,21 @@ OUT = Path(__file__).resolve().parent.parent / "data"
 OUT.mkdir(exist_ok=True)
 
 SERVICES = {
+    "jeungsi_jageum": {
+        "id": "STATSCU0100000060",
+        "label": "jeungsi_jageum",
+        # 증시자금추이: 날짜 + 투자자예탁금 + 장내파생상품예수금 + RP매도잔고
+        # + 위탁매매미수금 + 반대매매금액 + 반대매매비중
+        "columns": [
+            "date",
+            "투자자예탁금",
+            "장내파생상품_예수금",
+            "RP_매도잔고",
+            "위탁매매_미수금",
+            "반대매매_금액",
+            "반대매매_비중_pct",
+        ],
+    },
     "credit_balance": {
         "id": "STATSCU0100000070",
         "label": "신용공여_잔고",

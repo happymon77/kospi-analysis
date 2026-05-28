@@ -54,7 +54,7 @@ jobs:
         id: alert
         run: python src/check_alerts.py
         env:
-          SITE_URL: https://kospi-money-tracking.pages.dev/
+          SITE_URL: https://kospi-analysis.pages.dev/
 
       - name: Send email (only if alert triggered)
         if: steps.alert.outputs.send == 'true'

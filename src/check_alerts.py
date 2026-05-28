@@ -24,7 +24,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_JSON = ROOT / "dashboard" / "assets" / "data.json"
-SITE_URL = os.environ.get("SITE_URL", "https://kospi-money-tracking.pages.dev/")
+SITE_URL = os.environ.get("SITE_URL", "https://kospi-analysis.pages.dev/")
 
 # (필드명, 임계값 %, 방향: 'down' 하락이면 트리거, 'up' 상승이면 트리거, 라벨)
 RULES = [

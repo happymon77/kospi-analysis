@@ -127,8 +127,13 @@ async function init() {
   makeChart("ch_value",        labels, rows.map((r) => r["거래대금"]),        "#f59e0b", fmtBigKRW);
   makeChart("ch_credit",       labels, rows.map((r) => r["신용잔고"]),        "#ef4444", fmtBigKRW);
   makeChart("ch_lending",      labels, rows.map((r) => r["대차잔고"]),        "#8b5cf6", fmtBigKRW);
+  makeChart("ch_deriv",        labels, rows.map((r) => r["파생예수금"]),      "#14b8a6", fmtBigKRW);
+  makeChart("ch_rp",           labels, rows.map((r) => r["RP매도잔고"]),      "#6366f1", fmtBigKRW);
+  makeChart("ch_collateral",   labels, rows.map((r) => r["증권담보융자"]),    "#94a3b8", fmtBigKRW);
   makeChart("ch_credit_ratio", labels, rows.map((r) => r["신용_시총비율_pct"]), "#dc2626", fmtPct);
   makeChart("ch_foreign",      labels, rows.map((r) => r["외국인_비중_pct"]),   "#0891b2", fmtPct);
+
+  buildFiveFactorAnalysis(rows);
 }
 
 // === 예탁금 vs 거래대금 ===
@@ -425,6 +430,89 @@ function buildKospiCorr(rows) {
       },
     },
   });
+}
+
+// === 5대 자금/신용 지표 × KOSPI 통합 분석 ===
+const FIVE_ITEMS = [
+  { label: "예탁금",       col: "투자자예탁금" },
+  { label: "파생예수금",   col: "파생예수금" },
+  { label: "RP매도잔고",   col: "RP매도잔고" },
+  { label: "신용거래융자", col: "신용잔고" },
+  { label: "증권담보융자", col: "증권담보융자" },
+];
+
+function pearsonPaired(xs, ys) {
+  const a = [], b = [];
+  for (let i = 0; i < xs.length; i++) {
+    const x = xs[i], y = ys[i];
+    if (x == null || y == null || Number.isNaN(x) || Number.isNaN(y)) continue;
+    a.push(x); b.push(y);
+  }
+  return pearson(a, b);
+}
+
+function miniLineSvg(values, w = 80, h = 24, color = "#0ea5e9") {
+  const vals = values.filter((v) => v != null && !Number.isNaN(v));
+  if (vals.length < 2) return "";
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const range = max - min || 1;
+  const pts = [];
+  values.forEach((v, i) => {
+    if (v == null) return;
+    const x = (i / (values.length - 1)) * w;
+    const y = h - ((v - min) / range) * h;
+    pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  });
+  return `<svg width="${w}" height="${h}" class="inline-block ml-2 align-middle" style="overflow:visible">
+    <polyline points="${pts.join(" ")}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function buildFiveFactorAnalysis(rows) {
+  // === 표 A. 정적 r (전체 + 4구간) ===
+  const staticTbody = document.getElementById("five_static_tbody");
+  const PHASE_COLORS = {
+    "전체":     "#475569",
+    "1차 상승": "#10b981",
+    "조정":     "#ef4444",
+    "2차 상승": "#0ea5e9",
+  };
+  const staticRows = [];
+  PHASES.forEach((ph) => {
+    const subset = rows.filter((r) => r.date >= ph.start && r.date <= ph.end);
+    const sxs = subset.map((r) => r["KOSPI지수"]);
+    const sdxs = diffSeries(sxs);
+    const rCells = [], drCells = [];
+    FIVE_ITEMS.forEach((it) => {
+      const ys = subset.map((r) => r[it.col]);
+      const dys = diffSeries(ys);
+      rCells.push(pearsonPaired(sxs, ys));
+      drCells.push(pearsonPaired(sdxs, dys));
+    });
+    const period = `${ph.start.slice(5)} ~ ${ph.end.slice(5)}`;
+    const spark = miniLineSvg(sxs, 80, 24, PHASE_COLORS[ph.name] || "#0ea5e9");
+    staticRows.push(`
+      <tr>
+        <td class="border px-3 py-2 font-medium align-middle" rowspan="2">
+          <div class="flex items-center gap-2">
+            <div>
+              ${ph.name}
+              <div class="text-xs font-normal text-slate-500">${period}</div>
+            </div>
+            ${spark}
+          </div>
+        </td>
+        <td class="border px-3 py-2 text-xs text-slate-500">r</td>
+        ${rCells.map((v) => `<td class="border px-3 py-2 text-right ${rClass(v)}">${fmtR(v)}</td>`).join("")}
+      </tr>
+      <tr>
+        <td class="border px-3 py-2 text-xs text-slate-500">Δr</td>
+        ${drCells.map((v) => `<td class="border px-3 py-2 text-right ${rClass(v)}">${fmtR(v)}</td>`).join("")}
+      </tr>
+    `);
+  });
+  staticTbody.innerHTML = staticRows.join("");
 }
 
 init().catch((e) => {

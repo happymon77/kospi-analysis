@@ -2,7 +2,7 @@
 
 금융투자협회 FreeSIS 데이터로 KOSPI 시장의 자금 흐름(예탁금·거래대금·신용잔고·대차잔고)을 매일 자동 수집·시각화하는 정적 대시보드.
 
-- **Live**: https://kospi-money-tracking.pages.dev/
+- **Live**: https://kospi-analysis.pages.dev/
 - **데이터 갱신**: 매일 KST 21:00 (GitHub Actions cron)
 - **이메일 알림**: 전일 대비 5개 조건 중 하나 트리거 시에만 발송
 
