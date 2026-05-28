@@ -39,6 +39,18 @@ def main() -> None:
     kospi   = load(DATA / "유가증권시장_2026Q1Q2.csv")[
         ["date", "KOSPI지수", "거래대금", "시가총액", "외국인_비중_pct"]
     ]
+
+    # FreeSIS는 T+1 발행이라 당일 KOSPI/거래대금이 누락됨.
+    # 네이버 finance(T+0)로 결측만 보강 — FreeSIS 값이 있으면 그쪽 우선.
+    naver_kospi_path = DATA / "naver_kospi_daily.csv"
+    if naver_kospi_path.exists():
+        naver_k = load(naver_kospi_path)[["date", "KOSPI지수", "거래대금"]]
+        kospi = kospi.merge(naver_k, on="date", how="outer", suffixes=("", "_naver"))
+        kospi["KOSPI지수"] = kospi["KOSPI지수"].fillna(kospi["KOSPI지수_naver"])
+        kospi["거래대금"]   = kospi["거래대금"].fillna(kospi["거래대금_naver"])
+        kospi = kospi.drop(columns=["KOSPI지수_naver", "거래대금_naver"])
+        kospi = kospi.sort_values("date").reset_index(drop=True)
+
     foreign_path = DATA / "외국인_순매수_2026Q1Q2.csv"
     foreign = load(foreign_path)[["date", "외국인_순매수_억"]] if foreign_path.exists() else None
 
