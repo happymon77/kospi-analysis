@@ -49,10 +49,10 @@ def main() -> None:
 
     out = {
         "range": {"start": df["date"].min(), "end": df["date"].max()},
-        "rows": df.to_dict(orient="records"),
+        "rows": json.loads(df.to_json(orient="records")),
     }
     (OUT / "data.json").write_text(
-        json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(out, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8"
     )
     print(f"[+] rows: {len(df)}  cols: {list(df.columns)}")
     print(f"[+] saved: {OUT / 'data.json'}")
