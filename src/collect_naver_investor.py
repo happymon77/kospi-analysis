@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 import sys
 import time
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -72,6 +73,12 @@ def main() -> None:
     if sample_idx[-1] != 0:
         sample_idx.append(0)
     sample_bizdates = [dates[i] for i in sample_idx]
+
+    # KOSPI(FreeSIS) CSV는 T+1 발행 지연이 있어 사용자 측면에선 최신 거래일이
+    # 빠지는 일이 잦음. 오늘 날짜로 한 번 더 쿼리해 그날 포함 ~10거래일을 보강.
+    today_str = date.today().strftime("%Y%m%d")
+    if today_str not in sample_bizdates:
+        sample_bizdates.insert(0, today_str)
 
     sess = requests.Session()
     sess.headers.update(HEADERS)

@@ -42,11 +42,13 @@ def main() -> None:
     foreign_path = DATA / "외국인_순매수_2026Q1Q2.csv"
     foreign = load(foreign_path)[["date", "외국인_순매수_억"]] if foreign_path.exists() else None
 
-    df = kospi.merge(jeungsi, on="date", how="left") \
-              .merge(credit, on="date", how="left") \
-              .merge(lending, on="date", how="left")
+    # outer join: 지표마다 발행 시각이 달라 가장 최근 일자가 다를 수 있음.
+    # KOSPI 기준 left join이면 KOSPI 미발행 시 다른 지표의 최신값이 모두 누락됨.
+    df = kospi.merge(jeungsi, on="date", how="outer") \
+              .merge(credit, on="date", how="outer") \
+              .merge(lending, on="date", how="outer")
     if foreign is not None:
-        df = df.merge(foreign, on="date", how="left")
+        df = df.merge(foreign, on="date", how="outer")
     df = df.sort_values("date").reset_index(drop=True)
 
     df["신용_시총비율_pct"] = (df["신용잔고"] / df["시가총액"] * 100).round(3)
