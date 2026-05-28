@@ -22,6 +22,16 @@ const fmtEok = (v) => {
   return sign + KRW.format(Math.round(a)) + "억";
 };
 
+// Y축 전용 포맷터 (소수점 자리 고정, trimZero 적용 안 함)
+const axisPct = (n) => (v) => v == null ? "" : v.toFixed(n) + "%";
+// 입력 단위 백만원 → 조 변환
+const axisJoFromMW = (n) => (v) => v == null ? "" : (v / 1_000_000).toFixed(n) + "조";
+// 입력 단위 억 → 조 변환
+const axisJoFromEok = (n) => (v) => {
+  if (v == null) return "";
+  return (v < 0 ? "−" : "") + Math.abs(v / 10000).toFixed(n) + "조";
+};
+
 const pctDelta = (cur, prev) => {
   if (cur == null || prev == null || prev === 0) return null;
   return ((cur - prev) / prev) * 100;
@@ -143,10 +153,10 @@ async function init() {
   makeChart("ch_lending",      labels, rows.map((r) => r["대차잔고"]),        "#8b5cf6", fmtBigKRW);
   makeChart("ch_deriv",        labels, rows.map((r) => r["파생예수금"]),      "#14b8a6", fmtBigKRW);
   makeChart("ch_rp",           labels, rows.map((r) => r["RP매도잔고"]),      "#6366f1", fmtBigKRW);
-  makeChart("ch_collateral",   labels, rows.map((r) => r["증권담보융자"]),    "#94a3b8", fmtBigKRW);
-  makeChart("ch_credit_ratio", labels, rows.map((r) => r["신용_시총비율_pct"]), "#dc2626", fmtPct);
-  makeChart("ch_foreign_net",  labels, rows.map((r) => r["외국인_순매수_억"]),  "#0891b2", fmtEok);
-  makeChart("ch_foreign",      labels, rows.map((r) => r["외국인_비중_pct"]),   "#0891b2", fmtPct);
+  makeChart("ch_collateral",   labels, rows.map((r) => r["증권담보융자"]),    "#94a3b8", axisJoFromMW(1));
+  makeChart("ch_credit_ratio", labels, rows.map((r) => r["신용_시총비율_pct"]), "#dc2626", axisPct(2));
+  makeChart("ch_foreign_net",  labels, rows.map((r) => r["외국인_순매수_억"]),  "#0891b2", axisJoFromEok(1));
+  makeChart("ch_foreign",      labels, rows.map((r) => r["외국인_비중_pct"]),   "#0891b2", axisPct(1));
 
   buildFiveFactorAnalysis(rows);
 }
