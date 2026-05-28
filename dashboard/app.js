@@ -113,15 +113,20 @@ async function init() {
   // KPI 카드는 각 지표의 마지막 두 non-null 값을 사용해 항상 의미있는 수치를 표시.
   const lastTwo = (key) => {
     const out = [];
+    let lastDate = null;
     for (let i = rows.length - 1; i >= 0 && out.length < 2; i--) {
-      if (rows[i][key] != null) out.push(rows[i][key]);
+      if (rows[i][key] != null) {
+        if (out.length === 0) lastDate = rows[i].date;
+        out.push(rows[i][key]);
+      }
     }
-    return { last: out[0] ?? null, prev: out[1] ?? null };
+    return { last: out[0] ?? null, prev: out[1] ?? null, lastDate };
   };
   const kpi = (key, fmt, label) => {
-    const { last, prev } = lastTwo(key);
-    return { label, val: fmt(last), delta: pctDelta(last, prev) };
+    const { last, prev, lastDate } = lastTwo(key);
+    return { label, val: fmt(last), delta: pctDelta(last, prev), lastDate };
   };
+  const fmtAsOf = (date) => (date ? date.slice(5).replace("-", "/") + " 기준" : "");
 
   const cards = [
     kpi("KOSPI지수",   fmtIndex,  "KOSPI 지수"),
@@ -135,28 +140,48 @@ async function init() {
     const a = arrow(c.delta);
     return `
       <div class="kpi bg-white rounded-2xl shadow-sm p-4">
-        <div class="text-xs text-slate-500">${c.label}</div>
+        <div class="text-xs text-slate-500">${c.label} <span class="text-slate-400">(${fmtAsOf(c.lastDate)})</span></div>
         <div class="text-2xl font-bold mt-1">${c.val}</div>
         <div class="text-xs mt-1 ${a.cls}">${a.sym} <span class="text-slate-400">(전일대비)</span></div>
       </div>`;
   }).join("");
   document.getElementById("kpis").innerHTML = kpiHtml;
 
+  // 차트 제목 옆에 그 지표의 마지막 데이터 일자 뱃지 추가
+  const annotateChart = (canvasId, key) => {
+    const { lastDate } = lastTwo(key);
+    if (!lastDate) return;
+    const canvas = document.getElementById(canvasId);
+    const container = canvas?.closest("section, div");
+    const h2 = container?.querySelector("h2");
+    if (!h2 || h2.querySelector(".as-of-badge")) return;
+    const badge = document.createElement("span");
+    badge.className = "as-of-badge text-xs font-normal text-slate-400 ml-2";
+    badge.textContent = `(${fmtAsOf(lastDate)})`;
+    h2.appendChild(badge);
+  };
+
   // 상관관계 차트들
   buildCorrelation(rows);
   buildKospiCorr(rows);
 
-  makeChart("ch_kospi",        labels, rows.map((r) => r["KOSPI지수"]),       "#0ea5e9", fmtIndex);
-  makeChart("ch_deposit",      labels, rows.map((r) => r["투자자예탁금"]),    "#10b981", fmtBigKRW);
-  makeChart("ch_value",        labels, rows.map((r) => r["거래대금"]),        "#f59e0b", fmtBigKRW);
-  makeChart("ch_credit",       labels, rows.map((r) => r["신용잔고"]),        "#ef4444", fmtBigKRW);
-  makeChart("ch_lending",      labels, rows.map((r) => r["대차잔고"]),        "#8b5cf6", fmtBigKRW);
-  makeChart("ch_deriv",        labels, rows.map((r) => r["파생예수금"]),      "#14b8a6", fmtBigKRW);
-  makeChart("ch_rp",           labels, rows.map((r) => r["RP매도잔고"]),      "#6366f1", fmtBigKRW);
-  makeChart("ch_collateral",   labels, rows.map((r) => r["증권담보융자"]),    "#94a3b8", axisJoFromMW(1));
-  makeChart("ch_credit_ratio", labels, rows.map((r) => r["신용_시총비율_pct"]), "#dc2626", axisPct(2));
-  makeChart("ch_foreign_net",  labels, rows.map((r) => r["외국인_순매수_억"]),  "#0891b2", axisJoFromEok(1));
-  makeChart("ch_foreign",      labels, rows.map((r) => r["외국인_비중_pct"]),   "#0891b2", axisPct(1));
+  const charts = [
+    ["ch_kospi",        "KOSPI지수",        "#0ea5e9", fmtIndex],
+    ["ch_deposit",      "투자자예탁금",     "#10b981", fmtBigKRW],
+    ["ch_value",        "거래대금",         "#f59e0b", fmtBigKRW],
+    ["ch_credit",       "신용잔고",         "#ef4444", fmtBigKRW],
+    ["ch_lending",      "대차잔고",         "#8b5cf6", fmtBigKRW],
+    ["ch_deriv",        "파생예수금",       "#14b8a6", fmtBigKRW],
+    ["ch_rp",           "RP매도잔고",       "#6366f1", fmtBigKRW],
+    ["ch_collateral",   "증권담보융자",     "#94a3b8", axisJoFromMW(1)],
+    ["ch_credit_ratio", "신용_시총비율_pct", "#dc2626", axisPct(2)],
+    ["ch_foreign_net",  "외국인_순매수_억",  "#0891b2", axisJoFromEok(1)],
+    ["ch_foreign",      "외국인_비중_pct",   "#0891b2", axisPct(1)],
+  ];
+  for (const [canvasId, key, color, yFmt] of charts) {
+    makeChart(canvasId, labels, rows.map((r) => r[key]), color, yFmt);
+    annotateChart(canvasId, key);
+  }
 
   buildFiveFactorAnalysis(rows);
 }
