@@ -13,6 +13,14 @@ const fmtBigKRW = (v) => {
 };
 const fmtIndex = (v) => (v == null ? "—" : trimZero(v.toFixed(2)));
 const fmtPct   = (v) => (v == null ? "—" : trimZero(v.toFixed(2)) + "%");
+// 입력 단위: 억원
+const fmtEok = (v) => {
+  if (v == null) return "—";
+  const sign = v < 0 ? "−" : "";
+  const a = Math.abs(v);
+  if (a >= 10000) return sign + trimZero((a / 10000).toFixed(2)) + "조";
+  return sign + KRW.format(Math.round(a)) + "억";
+};
 
 const pctDelta = (cur, prev) => {
   if (cur == null || prev == null || prev === 0) return null;
@@ -137,6 +145,7 @@ async function init() {
   makeChart("ch_rp",           labels, rows.map((r) => r["RP매도잔고"]),      "#6366f1", fmtBigKRW);
   makeChart("ch_collateral",   labels, rows.map((r) => r["증권담보융자"]),    "#94a3b8", fmtBigKRW);
   makeChart("ch_credit_ratio", labels, rows.map((r) => r["신용_시총비율_pct"]), "#dc2626", fmtPct);
+  makeChart("ch_foreign_net",  labels, rows.map((r) => r["외국인_순매수_억"]),  "#0891b2", fmtEok);
   makeChart("ch_foreign",      labels, rows.map((r) => r["외국인_비중_pct"]),   "#0891b2", fmtPct);
 
   buildFiveFactorAnalysis(rows);

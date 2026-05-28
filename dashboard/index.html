@@ -54,6 +54,10 @@
       <p class="text-xs text-slate-400 mt-2">증권사 단기 운용 자금. 조정장에서도 +0.44 유지 — 회피처 성격.</p>
     </div>
     <div class="bg-white rounded-2xl shadow-sm p-5">
+      <h2 class="text-base font-semibold mb-3">신용잔고 / 시가총액 (%)</h2>
+      <canvas id="ch_credit_ratio"></canvas>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-5">
       <h2 class="text-base font-semibold mb-3">증권담보융자</h2>
       <canvas id="ch_collateral"></canvas>
       <p class="text-xs text-slate-400 mt-2">예탁증권 담보 대출. KOSPI와 r=−0.019 — 별도 신용 사이클로 움직임.</p>
@@ -62,8 +66,9 @@
 
   <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <div class="bg-white rounded-2xl shadow-sm p-5">
-      <h2 class="text-base font-semibold mb-3">신용잔고 / 시가총액 (%)</h2>
-      <canvas id="ch_credit_ratio"></canvas>
+      <h2 class="text-base font-semibold mb-3">외국인 순매수 금액 (KOSPI)</h2>
+      <canvas id="ch_foreign_net"></canvas>
+      <p class="text-xs text-slate-400 mt-2">일별 외국인 순매수 (단위: 억원). 출처: 네이버 금융.</p>
     </div>
     <div class="bg-white rounded-2xl shadow-sm p-5">
       <h2 class="text-base font-semibold mb-3">외국인 비중 (%)</h2>

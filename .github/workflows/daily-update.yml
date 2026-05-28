@@ -32,6 +32,10 @@ jobs:
       - name: Collect FreeSIS data
         run: python src/collect_freesis.py
 
+      - name: Collect Naver investor data
+        run: python src/collect_naver_investor.py
+        continue-on-error: true
+
       - name: Build dashboard data.json
         run: python src/build_dashboard_data.py
 
